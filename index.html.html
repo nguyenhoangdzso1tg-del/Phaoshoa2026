@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Happy New Year 2026</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle, #000428, #000);
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+        text-shadow: 0 0 25px white;
+        z-index: 2;
+    }
+
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+</style>
+</head>
+<body>
+
+<div id="text"></div>
+<canvas id="fireworks"></canvas>
+
+<script>
+/* ========== CANVAS ========== */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+window.onresize = () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+};
+
+/* ========== PHÁO HOA CHUẨN (BẮN LÊN → NỔ) ========== */
+let rockets = [];
+let particles = [];
+
+const colors = ["#ff004c", "#00eaff", "#ffe600", "#a200ff", "#00ff6a", "#ff7b00"];
+
+function launchFirework() {
+    rockets.push({
+        x: Math.random() * canvas.width,
+        y: canvas.height,
+        vy: -(Math.random() * 7 + 8),
+        targetY: Math.random() * canvas.height / 2,
+        color: colors[Math.floor(Math.random() * colors.length)]
+    });
+}
+
+function explode(x, y, color) {
+    for (let i = 0; i < 260; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 6 + 2;
+        particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 90,
+            color
+        });
+    }
+}
+
+function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    rockets.forEach((r, i) => {
+        r.y += r.vy;
+        ctx.fillStyle = r.color;
+        ctx.fillRect(r.x, r.y, 3, 8);
+
+        if (r.y <= r.targetY) {
+            explode(r.x, r.y, r.color);
+            rockets.splice(i, 1);
+        }
+    });
+
+    particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
+        p.life--;
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.life <= 0) particles.splice(i, 1);
+    });
+
+    requestAnimationFrame(animate);
+}
+animate();
+
+/* ========== NỘI DUNG ========== */
+const textDiv = document.getElementById("text");
+
+const countdown = [
+    { text: "3", color: "#ff004c" },
+    { text: "2", color: "#ffe600" },
+    { text: "1", color: "#00eaff" }
+];
+
+const messages = [
+    { text: "Happy New Year 2026", color: "#ff7b00" },
+    { text: "Chúc Lớp 11C15 ngày càng vui vẻ và thành công", color: "#FFD700" }, // VÀNG
+    { text: "Nauke mãi đỉnh", color: "#00E5FF" } // ĐỔI MÀU KHÁC
+];
+
+let cIndex = 0;
+let mIndex = 0;
+
+/* ========== ĐẾM NGƯỢC ========== */
+function showCountdown() {
+    textDiv.style.opacity = 0;
+
+    setTimeout(() => {
+        textDiv.innerText = countdown[cIndex].text;
+        textDiv.style.color = countdown[cIndex].color;
+        textDiv.style.fontSize = "130px";
+        textDiv.style.opacity = 1;
+
+        cIndex++;
+        if (cIndex < countdown.length) {
+            setTimeout(showCountdown, 1200);
+        } else {
+            setTimeout(() => {
+    document.getElementById("bgMusic").play();
+    showMessages();
+}, 1000);
+
+        }
+    }, 300);
+}
+
+/* ========== HIỆN CHỮ + PHÁO HOA ========== */
+function showMessages() {
+    textDiv.style.opacity = 0;
+
+    setTimeout(() => {
+        textDiv.innerText = messages[mIndex].text;
+        textDiv.style.color = messages[mIndex].color;
+        textDiv.style.fontSize = "54px";
+        textDiv.style.opacity = 1;
+
+        for (let i = 0; i < 6; i++) {
+            launchFirework();
+        }
+
+        mIndex++;
+        if (mIndex < messages.length) {
+            setTimeout(showMessages, 2600);
+        } else {
+            // Bắn liên tục sau dòng cuối
+            setInterval(() => {
+                launchFirework();
+            }, 500);
+        }
+    }, 500);
+}
+
+/* ========== START ========== */
+showCountdown();
+</script>
+<button onclick="document.getElementById('bgMusic').play()"
+        style="position:fixed;bottom:20px;right:20px;z-index:10;
+               padding:10px 15px;font-size:14px;">
+    🔊 Bật nhạc
+</button>
+
+</body>
+<audio id="bgMusic" src="happy-new-year-short.mp3"></audio>
+
+</html>
+
+
